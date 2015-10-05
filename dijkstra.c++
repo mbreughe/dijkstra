@@ -5,10 +5,13 @@
 #include <utility>
 #include <string>
 #include <sstream>
+#include <climits> 
 using namespace std;
 
 typedef unsigned int Node;
 typedef unsigned int Distance;
+#define INVALID UINT_MAX
+#define MAX_DIST UINT_MAX
 
 class CompareDist
 {
@@ -20,7 +23,7 @@ public:
 
 typedef priority_queue<pair<Node, Distance>, vector<pair<Node, Distance>>, CompareDist> PQ_NodeWeights;
 
-void dijkstra_initialize_node(const string& s, map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
+void dijkstra_initialize_edge(const string& s, map<Node, map<Node, Distance>> & edges){
     istringstream iss(s);
 
     // Extract the source node, destination node and length of their path    
@@ -30,16 +33,40 @@ void dijkstra_initialize_node(const string& s, map<Node, map<Node, Distance>> & 
     iss >> length;
 
     edges[src][dst]= length; 
-    (void) unvisited;
-    (void) previous;
 }
 
 string dijkstra_get_path(Node dest, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
     return "-1";
 }
 
-void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
-;
+void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous, Node dest){
+    while (! unvisited.empty()){
+        // Get node with shortest distance
+        pair<Node, Distance> curr_node = unvisited.top();
+        // Mark this node as visited
+        unvisited.pop();
+
+        // Exit if their are no reachable nodes anymore
+        if (curr_node.second == MAX_DIST){
+            cout << "No reachable nodes" << endl;
+            return;
+        }
+
+        // Process this node
+        map<Node, Distance> neighbours = edges[curr_node.first];
+        for (auto it = neighbours.begin(); it != neighbours.end(); ++it){
+            Distance new_dist = curr_node.second + it->second;
+            unvisited.emplace(it->first, new_dist);  
+            // XXX Need to update previous 
+        }
+
+        // If the processed node was the destination, stop processing!
+        if (curr_node.first == dest){
+            cout << "Found it!" << endl;
+            return;
+        }
+
+    }
 } 
 
 string dijkstra_solve(istream& in_stream){
@@ -59,15 +86,24 @@ string dijkstra_solve(istream& in_stream){
     PQ_NodeWeights unvisited;
     map<Node, Node> previous;
 
-    // Initialize the graph
+    // Initialize the edges of the graph
     for (int i=0; i< num_edges; ++i){
-        std::cout << "First node: ";
         getline(in_stream, s);
-        dijkstra_initialize_node(s, edges, unvisited, previous);
-        cout << endl;
+        dijkstra_initialize_edge(s, edges);
     }
 
-    dijkstra_eval(edges, unvisited, previous);
+    // Initialize the nodes of the graph
+    for (Node n=1; n <= num_nodes; ++n){
+        if (n == 1){
+            unvisited.emplace(n, 0);
+        }
+        else{
+            unvisited.emplace(n, MAX_DIST);
+        }
+        previous[n] = INVALID;
+    }
+
+    dijkstra_eval(edges, unvisited, previous, num_nodes);
 
     string path = dijkstra_get_path(num_nodes, unvisited, previous); 
     
