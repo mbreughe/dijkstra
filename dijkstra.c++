@@ -41,10 +41,10 @@ string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, map<No
 
     Node prev = dest;
     while (prev != INVALID && prev != src){
-        rev_path_os << prev; 
+        rev_path_os << " " << prev; 
         prev = previous[prev];
     }
-    rev_path_os << prev;
+    rev_path_os << " " << prev;
 
     if (prev == src){
         string rev_path = rev_path_os.str();
@@ -66,7 +66,6 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
 
         // Exit if their are no reachable nodes anymore
         if (curr_node.second == MAX_DIST){
-            cout << "No reachable nodes" << endl;
             return;
         }
 
@@ -89,7 +88,6 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
 
         // If the processed node was the destination, stop processing!
         if (curr_node.first == dest){
-            cout << "Found it!" << endl;
             return;
         }
 
