@@ -39,7 +39,7 @@ string dijkstra_get_path(Node dest, PQ_NodeWeights & unvisited, map<Node, Node> 
     return "-1";
 }
 
-void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous, Node dest){
+void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous, map<Node, Distance> distances, Node dest){
     while (! unvisited.empty()){
         // Get node with shortest distance
         pair<Node, Distance> curr_node = unvisited.top();
@@ -56,8 +56,17 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
         map<Node, Distance> neighbours = edges[curr_node.first];
         for (auto it = neighbours.begin(); it != neighbours.end(); ++it){
             Distance new_dist = curr_node.second + it->second;
-            unvisited.emplace(it->first, new_dist);  
-            // XXX Need to update previous 
+            Node neighbour_node = it->first;
+            // If this is the smallest distance we can find to neighbour node
+            if (new_dist < distances[neighbour_node]){
+                // update neighbour nodes' smallest distance
+                distances[neighbour_node] = new_dist;
+                // Push neighbour_node with this distance on the priority stack
+                unvisited.emplace(neighbour_node, new_dist);  
+                // Update neighbour_nodes' link towards the origin
+                previous[neighbour_node] = curr_node.first;
+            }
+
         }
 
         // If the processed node was the destination, stop processing!
@@ -82,9 +91,10 @@ string dijkstra_solve(istream& in_stream){
     iss >> num_edges;
  
     // set up data structures for our algorithm  
-    map<Node, map<Node, Distance>> edges;
-    PQ_NodeWeights unvisited;
-    map<Node, Node> previous;
+    map<Node, map<Node, Distance>> edges;   // Weight of the edges Node
+    PQ_NodeWeights unvisited;               // Set of unvisited nodes, prioritized by distance
+    map<Node, Node> previous;               // Neighbour node on the path to the origin
+    map<Node, Distance> distances;          // Shortest distance to reach this node
 
     // Initialize the edges of the graph
     for (int i=0; i< num_edges; ++i){
@@ -96,14 +106,16 @@ string dijkstra_solve(istream& in_stream){
     for (Node n=1; n <= num_nodes; ++n){
         if (n == 1){
             unvisited.emplace(n, 0);
+            distances[n] = 0;
         }
         else{
             unvisited.emplace(n, MAX_DIST);
+            distances[n] = MAX_DIST;
         }
         previous[n] = INVALID;
     }
 
-    dijkstra_eval(edges, unvisited, previous, num_nodes);
+    dijkstra_eval(edges, unvisited, previous, distances, num_nodes);
 
     string path = dijkstra_get_path(num_nodes, unvisited, previous); 
     
