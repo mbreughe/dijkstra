@@ -8,6 +8,7 @@
 #include <climits> 
 #include <algorithm>
 #include <iterator>
+#include <set>
 using namespace std;
 
 typedef unsigned int Node;
@@ -65,7 +66,7 @@ string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, vector
     }
 }
 
-void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, vector<Node> & previous, vector<Distance> distances, Node dest){
+void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, vector<Node> & previous, vector<Distance> distances, set<Node> visited, Node dest){
     while (! unvisited.empty()){
         // Get node with shortest distance
         pair<Node, Distance> curr_node = unvisited.top();
@@ -92,6 +93,10 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
         for (auto it = neighbours.begin(); it != neighbours.end(); ++it){
             Distance new_dist = curr_node.second + it->second;
             Node neighbour_node = it->first;
+            // Skip this neighbour node if already visited
+            if (visited.find(neighbour_node) != visited.end()){
+                continue;
+            }
             // If this is the smallest distance we can find to neighbour node
             // In addition, we can skip this neighbour, if its distance is larger than what 
             // we currently have for destination. This should optimize somewhat
@@ -105,6 +110,7 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
             }
             
         }
+        visited.insert(curr_node.first);
 
     }
 } 
@@ -126,6 +132,7 @@ string dijkstra_solve(istream& in_stream){
     PQ_NodeWeights unvisited;               // Set of unvisited nodes, prioritized by distance
     vector<Node> previous(num_nodes+1, INVALID);               // Neighbour node on the path to the origin
     vector<Distance> distances(num_nodes+1, MAX_DIST);          // Shortest distance to reach this node
+    set<Node> visited;
 
     // Initialize the edges of the graph
     for (int i=0; i< num_edges; ++i){
@@ -145,7 +152,7 @@ string dijkstra_solve(istream& in_stream){
         previous[n] = INVALID;
     }
 
-    dijkstra_eval(edges, unvisited, previous, distances, num_nodes);
+    dijkstra_eval(edges, unvisited, previous, distances, visited, num_nodes);
 
     string path = dijkstra_get_path(1, num_nodes, unvisited, previous); 
     
