@@ -7,6 +7,7 @@
 #include <sstream>
 #include <climits> 
 #include <algorithm>
+#include <iterator>
 using namespace std;
 
 typedef unsigned int Node;
@@ -39,20 +40,25 @@ void dijkstra_initialize_edge(const string& s, map<Node, map<Node, Distance>> & 
 }
 
 string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
-    ostringstream rev_path_os;
+    vector<Node> rev_path;
+    std::ostringstream oss;
 
     Node prev = dest;
     while (prev != INVALID && prev != src){
-        rev_path_os << " " << prev; 
+        rev_path.push_back(prev); 
         prev = previous[prev];
     }
-    rev_path_os << " " << prev;
+    rev_path.push_back(prev);
+    // Flip reverse path
+    std::reverse(rev_path.begin(), rev_path.end());
+
+    std::copy(rev_path.begin(), rev_path.end()-1, std::ostream_iterator<Node>(oss, " "));
+    // Append the last item without delimiter
+    oss << rev_path.back();
     
+    // If the last node is the source, return the path
     if (prev == src){
-        string rev_path = rev_path_os.str();
-        // Flip reverse path
-        std::reverse(rev_path.begin(), rev_path.end());
-        return rev_path;
+        return oss.str();
     }
     else{
         return "-1";
