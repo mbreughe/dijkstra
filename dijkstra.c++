@@ -72,8 +72,18 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
         // Mark this node as visited
         unvisited.pop();
 
+        // Don't process this node if we've already found a smaller route to here 
+        if (curr_node.second > distances[curr_node.first]){
+            continue;
+        }
+
         // Exit if their are no reachable nodes anymore
         if (curr_node.second == MAX_DIST){
+            return;
+        }
+        
+        // If the processed node was the destination, stop processing!
+        if (curr_node.first == dest){
             return;
         }
 
@@ -91,12 +101,7 @@ void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvi
                 // Update neighbour_nodes' link towards the origin
                 previous[neighbour_node] = curr_node.first;
             }
-
-        }
-
-        // If the processed node was the destination, stop processing!
-        if (curr_node.first == dest){
-            return;
+            
         }
 
     }
