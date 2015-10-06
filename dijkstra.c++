@@ -33,7 +33,9 @@ void dijkstra_initialize_edge(const string& s, map<Node, map<Node, Distance>> & 
     iss >> dst;
     iss >> length;
 
-    edges[src][dst]= length; 
+    // Since it's an undirected graph, we need to add a link from src->dst and vice versa
+    edges[src][dst] = length; 
+    edges[dst][src] = length;
 }
 
 string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
@@ -45,7 +47,7 @@ string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, map<No
         prev = previous[prev];
     }
     rev_path_os << " " << prev;
-
+    
     if (prev == src){
         string rev_path = rev_path_os.str();
         // Flip reverse path
