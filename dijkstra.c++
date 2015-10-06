@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <climits> 
+#include <algorithm>
 using namespace std;
 
 typedef unsigned int Node;
@@ -35,8 +36,25 @@ void dijkstra_initialize_edge(const string& s, map<Node, map<Node, Distance>> & 
     edges[src][dst]= length; 
 }
 
-string dijkstra_get_path(Node dest, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
-    return "-1";
+string dijkstra_get_path(Node src, Node dest, PQ_NodeWeights & unvisited, map<Node, Node> & previous){
+    ostringstream rev_path_os;
+
+    Node prev = dest;
+    while (prev != INVALID && prev != src){
+        rev_path_os << prev; 
+        prev = previous[prev];
+    }
+    rev_path_os << prev;
+
+    if (prev == src){
+        string rev_path = rev_path_os.str();
+        // Flip reverse path
+        std::reverse(rev_path.begin(), rev_path.end());
+        return rev_path;
+    }
+    else{
+        return "-1";
+    }
 }
 
 void dijkstra_eval(map<Node, map<Node, Distance>> & edges, PQ_NodeWeights & unvisited, map<Node, Node> & previous, map<Node, Distance> distances, Node dest){
@@ -117,7 +135,7 @@ string dijkstra_solve(istream& in_stream){
 
     dijkstra_eval(edges, unvisited, previous, distances, num_nodes);
 
-    string path = dijkstra_get_path(num_nodes, unvisited, previous); 
+    string path = dijkstra_get_path(1, num_nodes, unvisited, previous); 
     
     return path;
 }
